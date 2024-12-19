@@ -1,0 +1,18 @@
+[project]
+name = "sa_installer"
+version = "0.1.0"
+authors = [
+  { name="YoungSnoww", email="author@example.com" },
+]
+description = "A small example package"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/YoungSnoww/sa_installer"
+Issues = "https://github.com/YoungSnoww/sa_installer/issues"
