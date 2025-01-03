@@ -1,4 +1,3 @@
-from sa_installer.cli import CLI
+from .main import main
 
-# Add the CLI object to the context
-__all__ = ["CLI"]
+__all__ = ['main']
