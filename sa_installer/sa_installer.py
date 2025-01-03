@@ -2,14 +2,12 @@ import os
 from storage3.utils import StorageException
 from supabase import create_client, Client
 from dotenv import load_dotenv
-
 # COMMAND TO RUN: python3 setup.py sdist
 
 try:
     load_dotenv()
-    print("Loaded environment variables from .env file")
 except FileNotFoundError:
-    print("No .env file found")
+    pass
 
 # Initialize Supabase client
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -75,13 +73,9 @@ def build_package():
     os.system("python3 setup.py sdist")
 
 
-def upload_package(file_name, package_name):
+def upload_package(file_name, package_name, author, description, version):
 
     # Try a relative import to setup.py to get the author and description, version
-
-    author = input("Enter the author name: ")
-    description = input("Enter the package description: ")
-    version = input("Enter the package version: ")
 
     try:
         bytes_file = open(file_name, "rb").read()
