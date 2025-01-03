@@ -1,6 +1,8 @@
 import argparse
 import sys
 import os
+import json
+
 
 from sa_installer.sa_installer import (
     download_package,
@@ -32,9 +34,6 @@ class CLI:
     def __init_parser(self):
         self.parser = argparse.ArgumentParser(description="Supabase Package Manager")
 
-        self.parser.add_argument(
-            "-v", "--verbose", action="store_true", help="Verbose mode"
-        )
         subparsers = self.parser.add_subparsers(dest="command", help="Commands")
 
         # Download command
@@ -43,7 +42,10 @@ class CLI:
             "package_name", help="Name of the package to download"
         )
         download_parser.add_argument(
-            "version", nargs='?', default=None, help="Version of the package to download",
+            "version",
+            nargs="?",
+            default=None,
+            help="Version of the package to download",
         )
 
         # Build command
@@ -52,7 +54,9 @@ class CLI:
         # Upload command
         upload_parser = subparsers.add_parser("upload", help="Upload a package")
         upload_parser.add_argument("package_name", help="Name of the package to upload")
-        upload_parser.add_argument("version", help="Version of the package to upload")
+        upload_parser.add_argument(
+            "version", help="Version of the package to upload", nargs="?", default=None
+        )
 
         # Install command
         install_parser = subparsers.add_parser("install", help="Install a package")
@@ -81,16 +85,44 @@ class CLI:
 
     def upload(self, package_name, version, **kwargs):
 
+        author = None
+        description = None
+
+        try:
+
+            release_info = json.load(open("sa_release.json", "r"))
+            author = release_info.get("author")
+            description = release_info.get("description")
+            version = release_info.get("version")
+
+        except ImportError:
+            print("setup.py not found")
+        except AttributeError:
+            print("setup.py does not contain the required attributes")
+
+        if not author:
+            author = input("Enter the author name: ")
+
+        if not description:
+            description = input("Enter the package description: ")
+
+        if not version:
+            version = input("Enter the package version: ")
+
         file_name = f"{package_name}-{version}.tar.gz"
 
         # Check if the file exists in the dist directory
         if os.path.exists(f"dist/{file_name}"):
             file_name = f"dist/{file_name}"
+        elif os.path.exists(f"dist/{file_name.lower()}"):
+            file_name = f"dist/{file_name.lower()}"
+            print(f"File {file_name.lower()} found in dist directory")
         else:
-            print(f"File {file_name} not found in dist directory")
+            print(f"File {file_name.lower()} not found in dist directory")
             sys.exit(1)
+
         try:
-            upload_package(file_name, package_name)
+            upload_package(file_name, package_name, version, author, description)
         except Exception as e:
             print(f"Failed to upload package: {e}")
             sys.exit(1)
@@ -115,10 +147,11 @@ class CLI:
     def clean(self, **kwargs):
         try:
             os.system(f"rm -rf {self.sa_tmp}")
+            os.system("rm -rf dist")
         except Exception as e:
             print(f"Failed to clean: {e}")
             sys.exit(1)
-        print("Cleaned successfully")
+        print(f"Cleaned successfully, removed {self.sa_tmp} and dist")
 
     def run(self):
 
@@ -126,12 +159,9 @@ class CLI:
         command = args.command
 
         if command not in self.commands:
-            print(f"Command {command} not found")
+            # Display help message if command is not valid
+            self.parser.print_help()
             sys.exit(1)
-
-        from pprint import pprint
-
-        pprint(vars(args))
 
         self.commands[command](**vars(args))
 
