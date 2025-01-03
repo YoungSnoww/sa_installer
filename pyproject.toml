@@ -16,3 +16,6 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/YoungSnoww/sa_installer"
 Issues = "https://github.com/YoungSnoww/sa_installer/issues"
+
+[project.scripts]
+pip_sa = "sa_installer:main"
