@@ -1,9 +1,8 @@
 name: Publish Python Package to PYPI
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
 
 permissions:
   contents: read
