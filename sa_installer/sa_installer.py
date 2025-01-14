@@ -36,10 +36,12 @@ def download_package(package_name, version=None):
         version = "0.0.0"
 
         for package in response.data:
-            print(
-                f"Current version: {package['version']} - Current highest version: {version}"
-            )
-            if package["version"] > version:
+            #print(f"[DEBUG]: Package: {package}")
+            #print(
+            #    f"Current version: {package['version']} - Current highest version: {version}"
+            #)
+            if package["version"] > version and package["version"].count(".") == 2:
+                print(f"New version found: {package['version']}")
                 version = package["version"]
 
         print(f"Latest version of {package_name} is {version}")
@@ -113,14 +115,23 @@ def install_package(file_name, version=None):
     elif os.path.exists(file_name):
         os.system(f"pip install {file_name}")
         return
-        # check if the folder exists
+
     if os.path.exists("sa-tmp"):
-        # read the contents of the folder
         files = os.listdir("sa-tmp")
+        if version:
+            for file in files:
+                if file_name in file and version in file and file.endswith(".tar.gz"):
+                    os.system(f"pip install sa-tmp/{file}")
+                    return
+        highest_version_tar_file = ""
         for file in files:
             if file_name in file and file.endswith(".tar.gz"):
-                os.system(f"pip install sa-tmp/{file}")
-                return
+                if highest_version_tar_file < file:
+                    highest_version_tar_file = file
+
+        if highest_version_tar_file:
+            os.system(f"pip install sa-tmp/{highest_version_tar_file}")
+            return
     raise FileNotFoundError(f"Package {file_name} not found")
 
 
