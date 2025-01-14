@@ -30,6 +30,7 @@ class CLI:
 
         self.cwd = os.getcwd()
         self.sa_tmp = os.path.join(self.cwd, "sa-tmp")
+        self.sa_dist = os.path.join(self.cwd, "dist")
 
     def __init_parser(self):
         self.parser = argparse.ArgumentParser(description="Supabase Package Manager")
@@ -62,6 +63,12 @@ class CLI:
         install_parser = subparsers.add_parser("install", help="Install a package")
         install_parser.add_argument(
             "file_name", help="File name of the package to install"
+        )
+        install_parser.add_argument(
+            "version",
+            nargs="?",
+            default=None,
+            help="Version of the package to install",
         )
 
         # Remove command
@@ -111,26 +118,25 @@ class CLI:
 
         file_name = f"{package_name}-{version}.tar.gz"
 
-        # Check if the file exists in the dist directory
-        if os.path.exists(f"dist/{file_name}"):
-            file_name = f"dist/{file_name}"
-        elif os.path.exists(f"dist/{file_name.lower()}"):
-            file_name = f"dist/{file_name.lower()}"
-            print(f"File {file_name.lower()} found in dist directory")
-        else:
-            print(f"File {file_name.lower()} not found in dist directory")
-            sys.exit(1)
+        # Read the directory
+        files = os.listdir(self.sa_dist)
+
+        for file in files:
+            if file.lower() == file_name.lower():
+                file_name = f"{self.sa_dist}/{file}"
+                print(f"Found file {file_name}")
+                break
 
         try:
             upload_package(file_name, package_name, version, author, description)
         except Exception as e:
-            print(f"Failed to upload package: {e}")
+            print(f"Failed to upload package: {e} - {type(e)}")
             sys.exit(1)
         print(f"Package {package_name} version {version} uploaded successfully")
 
-    def install(self, file_name, **kwargs):
+    def install(self, file_name, version, **kwargs):
         try:
-            install_package(file_name)
+            install_package(file_name, version)
         except Exception as e:
             print(f"Failed to install package: {e}")
             sys.exit(1)
